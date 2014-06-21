@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'pact/xml/formatter'
+require 'pact/xml/diff_formatter'
 
 module Pact
   module XML
