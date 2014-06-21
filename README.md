@@ -18,7 +18,18 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+require 'pact'
+require 'pact/xml'
+
+Pact.configure do | config |
+    
+    config.register_body_differ /xml/, Pact::XML::Differ
+    config.diff_formatter = Pact::XML::DiffFormatter
+
+end
+
+```
 
 ## Contributing
 
