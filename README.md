@@ -24,6 +24,7 @@ require 'pact/xml'
 
 Pact.configure do | config |
     
+    # Maybe do this automatically?
     config.register_body_differ /xml/, Pact::XML::Differ
     config.diff_formatter = Pact::XML::DiffFormatter
 
