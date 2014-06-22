@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pact-xml (0.0.1)
+    pact-xml (0.0.1.alpha)
 
 GEM
   remote: https://rubygems.org/
