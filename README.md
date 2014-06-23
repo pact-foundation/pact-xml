@@ -26,7 +26,7 @@ Pact.configure do | config |
     
     # Maybe do this automatically?
     config.register_body_differ /xml/, Pact::XML::Differ
-    config.diff_formatter = Pact::XML::DiffFormatter
+    config.register_diff_formatter /xml/, Pact::XML::DiffFormatter
 
 end
 
