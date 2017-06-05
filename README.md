@@ -1,3 +1,7 @@
+*** THIS IS NOT IMPLEMENTED *** 
+
+If you are interested in implementing it, please contact the pact-dev google group.
+
 # Pact::Xml
 
 Provides XML support for the Pact gem.
