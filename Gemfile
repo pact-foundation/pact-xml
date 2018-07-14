@@ -1,4 +1,7 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in pact-xml.gemspec
 gemspec
+
+if ENV['X_PACT_DEVELOPMENT']
+  gem 'pact-support', path: '../pact-support'
+end
