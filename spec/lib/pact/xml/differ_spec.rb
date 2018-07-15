@@ -142,7 +142,7 @@ module Pact
               end
             end
 
-            context "when a string match", :focus => true do
+            context "when a string match" do
               let(:actual) { expected_xml_string }
               it "returns no diff" do
                 expect(subject).to eq([])
@@ -165,7 +165,7 @@ module Pact
               </c2_t>
             </root>) }
 
-            context "when a string match", :focus => true do
+            context "when a string match" do
               let(:actual) { expected_xml_string }
               it "returns no diff" do
                 expect(subject).to eq([])
