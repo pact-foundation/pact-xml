@@ -3,7 +3,6 @@ require 'pact/support'
 
 include Pact::Matchers
 
-# TODO: nested XML
 # TODO: complex XML
 # TODO: extra elements before matching one
 # TODO: refer to https://github.com/DiUS/pact-jvm/blob/master/pact-jvm-matchers/src/test/groovy/au/com/dius/pact/matchers/XmlBodyMatcherSpec.groovy for any missed scenarios
@@ -48,12 +47,18 @@ module Pact
               it "returns diff" do
                 expect(subject).to eq([Difference.new("text", "x")])
               end
+              it "returns message with path" do
+                expect(subject.first.message).to eq("Expected Text text but got x at $.tag")
+              end
             end
 
             context "when tag does not match" do
               let(:actual) { expected.gsub "tag", "x" }
               it "returns diff" do
                 expect(subject).to eq([Difference.new("tag", "x")])
+              end
+              it "returns message with path" do
+                expect(subject.first.message).to eq("Expected Element tag but got x at $.tag")
               end
             end
 
@@ -62,12 +67,18 @@ module Pact
               it "returns diff" do
                 expect(subject).to eq([Difference.new(nil, "another_tag")])
               end
+              it "returns message with path" do
+                expect(subject.first.message).to eq("Did not expect Element another_tag to exist at $.tag")
+              end
             end
 
             context "when attribute value does not match" do
               let(:actual) { expected.gsub "attr_val", "x"}
               it "returns diff" do
                 expect(subject).to eq([Difference.new("attr_val", "x")])
+              end
+              it "returns message with path" do
+                expect(subject.first.message).to eq("Expected Attribute attr_val but got x at $.tag")
               end
             end
 
@@ -76,12 +87,18 @@ module Pact
               it "returns diff" do
                 expect(subject).to eq([Difference.new("attr_val", nil)])
               end
+              it "returns message with path" do
+                expect(subject.first.message).to eq("Expected Attribute attr_val but got nil at $.tag")
+              end
             end
 
             context "when extra attribute" do
               let(:actual) { %(<tag attr="attr_val" another_attr="x">text</tag>)  }
               it "returns diff" do
                 expect(subject).to eq([Difference.new(nil, "another_attr")])
+              end
+              it "returns message with path" do
+                expect(subject.first.message).to eq("Did not expect Attribute another_attr to exist at $.tag")
               end
             end
 
@@ -101,6 +118,22 @@ module Pact
                 expect(subject.any?).to be false
               end
             end
+          end
+
+          context "nested xml" do
+
+            let(:expected_xml_string) { %(<tag attr="attr_val"><c_tag>text</c_tag></tag>) }
+
+            context "when text does not match" do
+              let(:actual) { expected.gsub "text", "x"}
+              it "returns diff" do
+                expect(subject).to eq([Difference.new("text", "x")])
+              end
+              it "returns message with path" do
+                expect(subject.first.message).to eq("Expected Text text but got x at $.tag.c_tag")
+              end
+            end
+
           end
 
         end
