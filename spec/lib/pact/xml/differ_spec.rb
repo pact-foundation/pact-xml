@@ -7,6 +7,8 @@ include Pact::Matchers
 # TODO: extra elements before matching one
 # TODO: refer to https://github.com/DiUS/pact-jvm/blob/master/pact-jvm-matchers/src/test/groovy/au/com/dius/pact/matchers/XmlBodyMatcherSpec.groovy for any missed scenarios
 
+# NOTE: what to do with parse exceptions - let it bubble up or translate to diff?
+
 module Pact
   module XML
     describe Differ do
@@ -139,6 +141,29 @@ module Pact
                 expect(subject.first.message).to eq("Expected Text text but got x at $.tag.c_tag")
               end
             end
+
+            context "when a string match", :focus => true do
+              let(:actual) { expected_xml_string }
+              it "returns no diff" do
+                expect(subject).to eq([])
+              end
+            end
+
+          end
+
+          context "complex xml" do
+
+            let(:expected_xml_string) { %(
+            <root r_a="r_a_val" xmlns:x="http://www.example.com/x">
+              <x:c1_t c_a="c_a_val">text_c1_1</x:c1_t>
+              <c1_t>text_c1_2</c1_t>
+              <c1_t>text_c1_3</c1_t>
+              <c2_t>
+                <c3_t>text_c3_1</c3_t>
+                <c3_t>text_c3_2</c3_t>
+                  <c4_t>text_c4_1</c4_t>
+              </c2_t>
+            </root>) }
 
             context "when a string match", :focus => true do
               let(:actual) { expected_xml_string }
