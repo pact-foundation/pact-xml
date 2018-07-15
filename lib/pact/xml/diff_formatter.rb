@@ -1,25 +1,27 @@
+require 'term/ansicolor'
+
 module Pact
   module XML
 
+    NEWLINE = "\n"
+    C = ::Term::ANSIColor
+
+
     class DiffFormatter
 
-      def initialize diff, options = {}
-        @diff = diff
-        @colour = options.fetch(:colour, false)
+      def self.color text, color, options
+        options.fetch(:colour, false) ? C.color(color, text) : text
+      end
+
+      def self.make_line diff, options
+        "EXPECTED : #{color diff.expected, :red, options} #{NEWLINE}" +
+        "ACTUAL   : #{color diff.actual, :green, options} #{NEWLINE}" + 
+        "MESSAGE  : #{diff.message}"
       end
 
       def self.call diff, options = {colour: Pact.configuration.color_enabled}
-        new(diff, options).call
+        diff.map { |d| make_line d, options }.join NEWLINE
       end
-
-      def call
-        # diff formatting code here
-      end
-
-      private
-
-
-
     end
 
   end

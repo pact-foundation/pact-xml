@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'term/ansicolor'
 require 'pact/xml/diff_formatter'
 
 module Pact
@@ -6,15 +7,63 @@ module Pact
 
     describe DiffFormatter do
 
+      let(:diff) {
+        [
+          Difference.new("a", "b", "Expected a but got b"),
+          Difference.new("x", "y", "Expected x but got y")
+        ]
+      }
+
+      subject { DiffFormatter.call(diff, options) }
+
+      let(:colour) { false }
+      let(:options) { { colour: colour }}
+
+      let(:expected_coloured) {
+        "EXPECTED : #{::Term::ANSIColor.red("a")}"
+      }
+      let(:actual_coloured) { 
+        "ACTUAL   : #{::Term::ANSIColor.green("b")}"
+      }
+
       describe ".call" do
 
+        context "when no diffs" do
+          let(:diff) { [] }
+
+          it "renders empty string" do
+            expect(subject).to eq ""
+          end
+
+        end
+
         context "when color_enabled is true" do
-          it "formats the diff nicely with color"
+          let(:colour) { false }
+
+          it "renders all diffs" do
+            expect(subject.split("\n").size).to eq 6
+          end
+
+        end
+
+        context "when color_enabled is true" do
+          let(:colour) { true }
+
+          it "formats the diff nicely with color" do
+            expect(subject).to include expected_coloured
+            expect(subject).to include actual_coloured
+          end
 
         end
 
         context "when color_enabled is false" do
-          it "formats the diff nicely without color"
+
+          let(:colour) { false }
+
+          it "formats the diff nicely without color" do
+            expect(subject).to_not include expected_coloured
+            expect(subject).to_not include actual_coloured
+          end
         end
 
       end
