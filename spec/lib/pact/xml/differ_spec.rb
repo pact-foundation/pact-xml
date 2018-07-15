@@ -26,13 +26,19 @@ module Pact
         subject { Differ.call(expected, actual, options) }
 
         context "when actual & expected is not a valid XML" do
+
           let(:actual) { "Actual not a XML" }
           let(:expected) { "Expected not a XML" }
+
           it "returns diff" do
             expect(subject).to eq([
-              Difference.new(expected, actual, "Actual is not a valid XML"),
-              Difference.new(expected, actual, "Expected is not a valid XML")
+              Difference.new(expected, actual),
+              Difference.new(expected, actual)
             ])
+          end
+          it "returns invalid XML message" do
+            expect(subject.first.message).to eq("Expected is not a valid XML")
+            expect(subject.at(1).message).to eq("Actual is not a valid XML")
           end
         end
 
