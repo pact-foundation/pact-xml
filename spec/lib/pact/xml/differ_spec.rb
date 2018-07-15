@@ -108,7 +108,7 @@ module Pact
               end
             end
 
-            context "when attribute and text" do
+            context "when attribute and text mismatch" do
               let(:actual) { (expected.gsub "attr_val", "x").gsub "text", "y" }
               it "returns diff" do
                 expect(subject).to eq([
@@ -137,6 +137,13 @@ module Pact
               end
               it "returns message with path" do
                 expect(subject.first.message).to eq("Expected Text text but got x at $.tag.c_tag")
+              end
+            end
+
+            context "when a string match", :focus => true do
+              let(:actual) { expected_xml_string }
+              it "returns no diff" do
+                expect(subject).to eq([])
               end
             end
 
