@@ -1,3 +1,4 @@
+require 'pact/xml/errors'
 require 'pact/matchers'
 require 'rexml/document'
 
@@ -11,22 +12,27 @@ module Pact
 
       DEFAULT_OPTIONS = {allow_unexpected_keys: true, type: false}.freeze
 
-      def self.valid_xml expected, actual, doc, type
-        doc.root.nil? ? [Difference.new(expected, actual, "#{type} is not a valid XML")] : []
+      def self.validate_xml expected, actual, doc, type
+        raise InvalidXmlError, "#{type} is not a valid XML" if doc.root.nil?
       end
 
-      def self.valid_xmls expected, actual, expected_doc, actual_doc
-        []
-          .concat ( valid_xml expected, actual, expected_doc, 'Expected' )
-          .concat ( valid_xml expected, actual, actual_doc, 'Actual' )
+      def self.validate_xmls expected, actual, expected_doc, actual_doc
+          validate_xml expected, actual, expected_doc, 'Expected'
+          validate_xml expected, actual, actual_doc, 'Actual'
+      end
+
+      def self.parse xml, type
+        doc = (Document.new xml)
+        rescue REXML::ParseException
+          raise InvalidXmlError, "#{type} is not a valid XML"
+        doc
       end
 
       def self.call expected, actual, options = {}
-        expected_doc = (Document.new expected)
-        actual_doc = (Document.new actual)
+        expected_doc = parse expected, "Expected"
+        actual_doc = parse actual, "Actual"
 
-        diff = valid_xmls expected, actual, expected_doc, actual_doc
-        return diff if diff.any?
+        validate_xmls expected, actual, expected_doc, actual_doc
 
         node_diff expected_doc, actual_doc, ['$'], DEFAULT_OPTIONS.merge(options)
       end

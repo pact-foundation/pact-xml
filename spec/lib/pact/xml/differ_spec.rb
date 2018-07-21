@@ -1,4 +1,5 @@
 require 'pact/xml/differ'
+require 'pact/xml/errors'
 require 'pact/support'
 
 include Pact::Matchers
@@ -6,8 +7,6 @@ include Pact::Matchers
 # TODO: complex XML
 # TODO: extra elements before matching one
 # TODO: refer to https://github.com/DiUS/pact-jvm/blob/master/pact-jvm-matchers/src/test/groovy/au/com/dius/pact/matchers/XmlBodyMatcherSpec.groovy for any missed scenarios
-
-# NOTE: what to do with parse exceptions - let it bubble up or translate to diff?
 
 module Pact
   module XML
@@ -19,7 +18,8 @@ module Pact
           pact_specification_version,
           matching_rules
         ) }
-        let(:expected_xml_string) { "" }
+        let(:expected_xml_string) { "<xml/>" }
+        let(:actual) { "<xml/>" }
         let(:pact_specification_version) { Pact::SpecificationVersion.new("3") }
         let(:matching_rules) { nil }
         let(:options) { { allow_unexpected_keys: allow_unexpected_keys } }
@@ -27,20 +27,39 @@ module Pact
 
         subject { Differ.call(expected, actual, options) }
 
-        context "when actual & expected is not a valid XML" do
-
+        context "when actual is not a valid XML" do
           let(:actual) { "Actual not a XML" }
+
+          it "throws error" do
+            expect { subject }.to raise_error InvalidXmlError
+            expect { subject }.to raise_error "Actual is not a valid XML"
+          end
+        end
+
+        context "when expected is not a valid XML" do
           let(:expected) { "Expected not a XML" }
 
-          it "returns diff" do
-            expect(subject).to eq([
-              Difference.new(expected, actual),
-              Difference.new(expected, actual)
-            ])
+          it "throws error" do
+            expect { subject }.to raise_error InvalidXmlError
+            expect { subject }.to raise_error "Expected is not a valid XML"
           end
-          it "returns invalid XML message" do
-            expect(subject.first.message).to eq("Expected is not a valid XML")
-            expect(subject.at(1).message).to eq("Actual is not a valid XML")
+        end
+
+        context "when actual is broken XML" do
+          let(:actual) { "<xml" }
+
+          it "throws error" do
+            expect { subject }.to raise_error InvalidXmlError
+            expect { subject }.to raise_error "Actual is not a valid XML"
+          end
+        end
+
+        context "when expected is broken XML" do
+          let(:expected) { "<xml" }
+
+          it "throws error" do
+            expect { subject }.to raise_error InvalidXmlError
+            expect { subject }.to raise_error "Expected is not a valid XML"
           end
         end
 
