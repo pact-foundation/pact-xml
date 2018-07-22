@@ -1,0 +1,10 @@
+AllCops:
+  TargetRubyVersion: 2.3
+Metrics/ModuleLength:
+  Enabled: false
+Metrics/ClassLength:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
