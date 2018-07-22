@@ -4,9 +4,7 @@ require 'pact/support'
 
 include Pact::Matchers
 
-# TODO: complex XML
-# TODO: extra elements before matching one
-# TODO: refer to https://github.com/DiUS/pact-jvm/blob/master/pact-jvm-matchers/src/test/groovy/au/com/dius/pact/matchers/XmlBodyMatcherSpec.groovy for any missed scenarios
+# TODO: add rules support
 
 module Pact
   module XML
@@ -63,6 +61,27 @@ module Pact
           end
         end
 
+        context "when expected is missing" do
+          let(:expected) { nil }
+
+          it { expect(subject).to be_empty }
+        end
+
+        context "when expected is empty" do
+          let(:expected) { "" }
+
+          context "when actual is empty" do
+            let(:actual) { "" }
+
+            it { expect(subject).to be_empty }
+          end
+          context "when actual is anything" do
+            let(:actual) { "<xml/>" }
+
+            it { expect(subject).to be_empty }
+          end
+        end
+
         context "when allow_unexpected_keys is false" do
 
           context "simple xml" do
@@ -75,7 +94,7 @@ module Pact
                 expect(subject).to eq([Difference.new("text", "x")])
               end
               it "returns message with path" do
-                expect(subject.first.message).to eq("Expected Text text but got x at $.tag")
+                expect(subject.first.message).to eq("Expected text text but got x at $.tag.#text")
               end
             end
 
@@ -85,7 +104,7 @@ module Pact
                 expect(subject).to eq([Difference.new("tag", "x")])
               end
               it "returns message with path" do
-                expect(subject.first.message).to eq("Expected Element tag but got x at $.tag")
+                expect(subject.first.message).to eq("Expected element tag but got x at $.tag")
               end
             end
 
@@ -95,7 +114,7 @@ module Pact
                 expect(subject).to eq([Difference.new(nil, "another_tag")])
               end
               it "returns message with path" do
-                expect(subject.first.message).to eq("Did not expect Element another_tag to exist at $.tag")
+                expect(subject.first.message).to eq("Did not expect element another_tag to exist at $.tag")
               end
             end
 
@@ -105,7 +124,7 @@ module Pact
                 expect(subject).to eq([Difference.new("attr_val", "x")])
               end
               it "returns message with path" do
-                expect(subject.first.message).to eq("Expected Attribute attr_val but got x at $.tag")
+                expect(subject.first.message).to eq("Expected attribute attr_val but got x at $.tag.@attr")
               end
             end
 
@@ -115,7 +134,7 @@ module Pact
                 expect(subject).to eq([Difference.new("attr_val", nil)])
               end
               it "returns message with path" do
-                expect(subject.first.message).to eq("Expected Attribute attr_val but got nil at $.tag")
+                expect(subject.first.message).to eq("Expected attribute attr_val but got nil at $.tag.@attr")
               end
             end
 
@@ -125,7 +144,7 @@ module Pact
                 expect(subject).to eq([Difference.new(nil, "another_attr")])
               end
               it "returns message with path" do
-                expect(subject.first.message).to eq("Did not expect Attribute another_attr to exist at $.tag")
+                expect(subject.first.message).to eq("Did not expect attribute another_attr to exist at $.tag")
               end
             end
 
@@ -139,12 +158,35 @@ module Pact
               end
             end
 
+
             context "when a string match" do
               let(:actual) { expected_xml_string }
-              it "returns no diff" do
-                expect(subject.any?).to be false
-              end
+
+              it { expect(subject).to be_empty }
             end
+          end
+
+          context "prolog" do
+            let(:expected_xml_string) { %(<?xml version="1.0" encoding="UTF-8"?><tag attr="attr_val">text</tag>) }
+
+            context "when a string match" do
+              let(:actual) { expected }
+
+              it { expect(subject).to be_empty }
+            end
+
+            context "when missing" do
+              let(:actual) { %(<tag attr="attr_val">text</tag>) }
+
+              it { expect(subject).to be_empty }
+            end
+
+            context "when different" do
+              let(:actual) { %(<?xml?><tag attr="attr_val">text</tag>) }
+
+              it { expect(subject).to be_empty }
+            end
+
           end
 
           context "nested xml" do
@@ -157,15 +199,28 @@ module Pact
                 expect(subject).to eq([Difference.new("text", "x")])
               end
               it "returns message with path" do
-                expect(subject.first.message).to eq("Expected Text text but got x at $.tag.c_tag")
+                expect(subject.first.message).to eq("Expected text text but got x at $.tag.c_tag.#text")
               end
             end
 
             context "when a string match" do
               let(:actual) { expected_xml_string }
-              it "returns no diff" do
-                expect(subject).to eq([])
-              end
+
+              it { expect(subject).to be_empty }
+            end
+
+            context "when extra whitespaces" do
+              let(:actual) { %(<tag attr="attr_val"> <c_tag>text</c_tag> </tag>) }
+              it { expect(subject).to be_empty }
+            end
+
+            context "when extra newlines" do
+              let(:actual) { %(
+              <tag attr="attr_val">
+               <c_tag>text</c_tag>
+               </tag>) }
+
+              it { expect(subject).to be_empty }
             end
 
           end
@@ -184,13 +239,64 @@ module Pact
               </c2_t>
             </root>) }
 
-            context "when a string match" do
-              let(:actual) { expected_xml_string }
-              it "returns no diff" do
-                expect(subject).to eq([])
+            context "when tag does not match" do
+              let(:actual) { expected.gsub "c3_t", "x" }
+              it "returns diff" do
+                expect(subject).to eq([
+                  Difference.new("c3_t", "x"),
+                  Difference.new("c3_t", "x")
+                ])
+              end
+              it "returns message with path" do
+                expect(subject.first.message).to eq("Expected element c3_t but got x at $.root.c2_t.c3_t")
               end
             end
 
+            context "when text does not match" do
+              let(:actual) { expected.gsub "text_c3_1", "x" }
+              it "returns diff" do
+                expect(subject).to eq([
+                  Difference.new("text_c3_1", "x")
+                ])
+              end
+              it "returns message with path" do
+                expect(subject.first.message).to eq("Expected text text_c3_1 but got x at $.root.c2_t.c3_t.#text")
+              end
+            end
+
+
+            context "when a string match" do
+              let(:actual) { expected_xml_string }
+
+              it { expect(subject).to be_empty }
+            end
+
+          end
+
+          context "elements" do
+            let(:expected_xml_string) { %(
+            <root>
+              <first/>
+              <second/>
+              <third/>
+            </root>) }
+
+            context "wrong order" do
+              let(:actual) { %(
+              <root>
+                <first/>
+                <third/>
+                <second/>
+              </root>) }
+
+              it "returns diff" do
+                expect(subject).to eq([
+                  Difference.new("second", "third"),
+                  Difference.new("third", "second")
+                ])
+              end
+
+            end
           end
 
         end
@@ -205,16 +311,13 @@ module Pact
 
             context "when extra tag" do
               let(:actual) { %(<tag attr="attr_val"><another_tag/>text</tag>) }
-              it "returns no diff" do
-                expect(subject.any?).to be false
-              end
+
+              it { expect(subject).to be_empty }
             end
 
             context "when extra attribute" do
               let(:actual) { %(<tag attr="attr_val" another_attr="x">text</tag>)  }
-              it "returns no diff" do
-                expect(subject.any?).to be false
-              end
+              it { expect(subject).to be_empty }
             end
 
           end

@@ -22,13 +22,15 @@ module Pact
       end
 
       def self.parse xml, type
-        doc = (Document.new xml)
+        doc = Document.new xml, :ignore_whitespace_nodes=>:all
         rescue REXML::ParseException
           raise InvalidXmlError, "#{type} is not a valid XML"
         doc
       end
 
       def self.call expected, actual, options = {}
+        return [] if expected.to_s.empty?
+
         expected_doc = parse expected, "Expected"
         actual_doc = parse actual, "Actual"
 
@@ -49,7 +51,7 @@ module Pact
         diff = []
         expected.attributes.each_attribute { |a|
           diff.concat (
-            difference get_attr_by_name(a.name, expected), get_attr_by_name(a.name, actual), 'Attribute', path
+            difference get_attr_by_name(a.name, expected), get_attr_by_name(a.name, actual), 'attribute', path, ".@#{a.name}"
           )
         }
         diff.concat ( extra_attrs expected, actual, path ) unless options[:allow_unexpected_keys]
@@ -62,7 +64,7 @@ module Pact
           diff.push a.name if (get_attr_by_name a.name, expected).nil?
         }
 
-        diff.map { |x| Difference.new(nil, x, "Did not expect Attribute #{x} to exist at #{path_to_s path}") }
+        diff.map { |x| Difference.new(nil, x, "Did not expect attribute #{x} to exist at #{path_to_s path}") }
       end
 
       def self.elem_diff expected, actual, path, options
@@ -81,7 +83,7 @@ module Pact
 
       def self.extra_elems expected, actual, path
         actual.elements.drop(expected.elements.size).map { |x|
-          Difference.new(nil, x.name,  "Did not expect Element #{x.name} to exist at #{path_to_s path}")
+          Difference.new(nil, x.name,  "Did not expect element #{x.name} to exist at #{path_to_s path}")
         }
       end
 
@@ -89,8 +91,8 @@ module Pact
         x.nil? ? 'nil' : x
       end
 
-      def self.difference expected, actual, type, path
-        expected == actual ? [] : [Difference.new(expected, actual, "Expected #{type} #{nil_if_nil expected} but got #{nil_if_nil actual} at #{path_to_s path}")]
+      def self.difference expected, actual, type, path, suffix
+        expected == actual ? [] : [Difference.new(expected, actual, "Expected #{type} #{nil_if_nil expected} but got #{nil_if_nil actual} at #{path_to_s path}#{suffix}")]
       end
 
       def self.node_diff expected, actual, path, options
@@ -98,12 +100,12 @@ module Pact
           return []
         end
 
-        diff = difference expected.name, actual.name, 'Element', path
+        diff = difference expected.name, actual.name, "element", path, ""
         return diff if diff.any?
 
         diff.concat ( attr_diff expected, actual, path, options)
         diff.concat ( elem_diff expected, actual, path, options)
-        diff.concat ( difference expected.text, actual.text, 'Text', path )
+        diff.concat ( difference expected.text, actual.text, "text", path, ".#text" )
       end
 
     end
