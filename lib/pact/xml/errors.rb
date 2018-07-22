@@ -2,6 +2,7 @@
 
 module Pact
   module XML
-    VERSION = '0.0.1.alpha'
+    class InvalidXmlError < StandardError
+    end
   end
 end

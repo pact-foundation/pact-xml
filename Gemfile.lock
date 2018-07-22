@@ -6,10 +6,12 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    ast (2.4.0)
     awesome_print (1.8.0)
     diff-lcs (1.2.5)
     filelock (1.1.1)
     find_a_port (1.0.1)
+    jaro_winkler (1.5.1)
     json (2.1.0)
     pact (1.28.0)
       json (> 1.8.5)
@@ -39,9 +41,14 @@ GEM
       rspec (>= 2.14)
       term-ansicolor (~> 1.0)
       thor
+    parallel (1.12.1)
+    parser (2.5.1.2)
+      ast (~> 2.4.0)
+    powerpack (0.1.2)
     rack (2.0.5)
     rack-test (0.8.3)
       rack (>= 1.0, < 3)
+    rainbow (3.0.0)
     rake (10.3.2)
     randexp (0.1.7)
     rspec (3.0.0)
@@ -56,10 +63,20 @@ GEM
     rspec-mocks (3.0.2)
       rspec-support (~> 3.0.0)
     rspec-support (3.0.2)
+    rubocop (0.58.1)
+      jaro_winkler (~> 1.5.1)
+      parallel (~> 1.10)
+      parser (>= 2.5, != 2.5.1.1)
+      powerpack (~> 0.1)
+      rainbow (>= 2.2.2, < 4.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (~> 1.0, >= 1.0.1)
+    ruby-progressbar (1.9.0)
     term-ansicolor (1.6.0)
       tins (~> 1.0)
     thor (0.20.0)
     tins (1.16.3)
+    unicode-display_width (1.4.0)
     webrick (1.4.2)
 
 PLATFORMS
@@ -72,6 +89,7 @@ DEPENDENCIES
   pact-xml!
   rake
   rspec (~> 3.0)
+  rubocop (~> 0.58.1)
 
 BUNDLED WITH
    1.16.2

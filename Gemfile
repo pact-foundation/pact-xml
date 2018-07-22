@@ -1,7 +1,7 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 gemspec
 
-if ENV['X_PACT_DEVELOPMENT']
-  gem 'pact-support', path: '../pact-support'
-end
+gem 'pact-support', path: '../pact-support' if ENV['X_PACT_DEVELOPMENT']
