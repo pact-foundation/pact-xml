@@ -8,10 +8,13 @@ module Pact
   module XML
     describe DiffFormatter do
       let(:diff) do
-        [
-          Difference.new('a', 'b', 'Expected a but got b'),
-          Difference.new('x', 'y', 'Expected x but got y')
-        ]
+        {
+          body:
+          [
+            Difference.new('a', 'b', 'Expected a but got b'),
+            Difference.new('x', 'y', 'Expected x but got y')
+          ]
+        }
       end
 
       subject { DiffFormatter.call(diff, options) }
@@ -28,7 +31,7 @@ module Pact
 
       describe '.call' do
         context 'when no diffs' do
-          let(:diff) { [] }
+          let(:diff) { {} }
 
           it { expect(subject).to be_empty }
         end
