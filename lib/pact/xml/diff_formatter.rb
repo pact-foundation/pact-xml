@@ -20,9 +20,11 @@ module Pact
       end
 
       def self.call(
-          diff,
+          result,
           options = { colour: Pact.configuration.color_enabled }
         )
+        diff = result[:body]
+        return '' if diff.nil?
         diff.map { |d| make_line d, options }.join NEWLINE
       end
     end
